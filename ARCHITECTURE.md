@@ -26,6 +26,7 @@ The system context shows LocalSearch as a single box and its relationship with e
 **External Systems:**
 - **Local Filesystem** - the source of files to be crawled, read, and indexed.
 
+![System Context Diagram](images/context.png)
 ```plantuml
 @startuml C4_Context
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
@@ -53,6 +54,8 @@ Containers are the separately deployable/runnable units that make up LocalSearch
 | **Indexing Engine** | Java | Crawls the filesystem, extracts content and metadata, populates the database |
 | **Query Engine** | Java | Parses queries, executes full-text search against the database, formats results |
 | **Database** | PostgreSQL | Stores indexed file records, content, metadata; provides full-text search via `tsvector` |
+![Container Diagram](images/containers.png)
+
 ```plantuml
 @startuml C4_Containers
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
@@ -94,6 +97,8 @@ Rel(queryEngine, db, "Executes full-text search queries", "JDBC")
 | **ChangeDetector** | Compares file modification timestamps and sizes against the database to support incremental indexing. |
 | **IndexBuilder** | Orchestrates the full indexing pipeline: crawl -> filter -> extract -> store. Tracks progress and generates a summary report. |
 | **FileRepository** | Data access layer for inserting, updating, and deleting file records in PostgreSQL. |
+![Indexing Engine Components](images/components_indexer.png)
+
 ```plantuml
 @startuml C4_Components_Indexer
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
@@ -135,6 +140,8 @@ Rel(metaEx, fs, "Reads file attributes", "java.nio")
 | **SearchService** | Executes full-text search using PostgreSQL's `to_tsquery` / `ts_rank`. Supports single-word, multi-word, and phrase queries. |
 | **ResultFormatter** | Formats results for display: filename, path, metadata summary, and contextual content preview (snippet). |
 | **SearchRepository** | Data access layer for read-only search queries against the database. |
+
+![Query Engine Components](images/components_query.png)
 ```plantuml
 @startuml C4_Components_Query
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
