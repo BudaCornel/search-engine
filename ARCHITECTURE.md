@@ -79,6 +79,53 @@ Rel(queryEngine, db, "Executes full-text search queries", "JDBC")
 
 @enduml
 ```
+---
 
+## Level 3 - Components
+
+### Indexing Engine - Components
+
+| Component | Responsibility |
+|-----------|---------------|
+| **FileCrawler** | Recursively traverses directories. Detects symlink loops and handles permission errors gracefully. |
+| **FileFilter** | Applies configurable ignore rules (e.g., by extension, path pattern, hidden files) to skip unwanted files. |
+| **ContentExtractor** | Reads textual file content. Extracts the first N lines for preview storage. |
+| **MetadataExtractor** | Collects file metadata: size, timestamps (created, modified), extension, MIME type, permissions. |
+| **ChangeDetector** | Compares file modification timestamps and sizes against the database to support incremental indexing. |
+| **IndexBuilder** | Orchestrates the full indexing pipeline: crawl -> filter -> extract -> store. Tracks progress and generates a summary report. |
+| **FileRepository** | Data access layer for inserting, updating, and deleting file records in PostgreSQL. |
+```plantuml
+@startuml C4_Components_Indexer
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram - Indexing Engine
+
+Container_Boundary(indexer, "Indexing Engine") {
+    Component(crawler, "FileCrawler", "Java", "Recursive directory traversal with symlink loop detection.")
+    Component(filter, "FileFilter", "Java", "Configurable ignore rules: extensions, patterns, hidden files.")
+    Component(contentEx, "ContentExtractor", "Java", "Reads text content and extracts preview lines.")
+    Component(metaEx, "MetadataExtractor", "Java", "Collects size, timestamps, MIME type, permissions.")
+    Component(changeDet, "ChangeDetector", "Java", "Detects modified/new/deleted files for incremental indexing.")
+    Component(builder, "IndexBuilder", "Java", "Orchestrates pipeline, tracks progress, generates report.")
+    Component(fileRepo, "FileRepository", "Java / JDBC", "CRUD operations on file records in PostgreSQL.")
+}
+
+System_Ext(fs, "Local Filesystem")
+ContainerDb(db, "PostgreSQL")
+
+Rel(builder, crawler, "Initiates traversal")
+Rel(crawler, filter, "Passes discovered paths")
+Rel(filter, contentEx, "Passes accepted files")
+Rel(filter, metaEx, "Passes accepted files")
+Rel(builder, changeDet, "Checks for changes")
+Rel(changeDet, fileRepo, "Reads existing records")
+Rel(builder, fileRepo, "Writes new/updated records")
+Rel(fileRepo, db, "SQL INSERT/UPDATE/DELETE", "JDBC")
+Rel(crawler, fs, "Reads directory entries", "java.nio")
+Rel(contentEx, fs, "Reads file content", "java.nio")
+Rel(metaEx, fs, "Reads file attributes", "java.nio")
+
+@enduml
+```
 
 
