@@ -127,5 +127,43 @@ Rel(metaEx, fs, "Reads file attributes", "java.nio")
 
 @enduml
 ```
+### Query Engine - Components
+
+| Component | Responsibility |
+|-----------|---------------|
+| **QueryParser** | Tokenizes and sanitizes user input. Transforms raw queries into structured search terms. |
+| **SearchService** | Executes full-text search using PostgreSQL's `to_tsquery` / `ts_rank`. Supports single-word, multi-word, and phrase queries. |
+| **ResultFormatter** | Formats results for display: filename, path, metadata summary, and contextual content preview (snippet). |
+| **SearchRepository** | Data access layer for read-only search queries against the database. |
+```plantuml
+@startuml C4_Components_Query
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram - Query Engine
+
+Container_Boundary(queryEngine, "Query Engine") {
+    Component(parser, "QueryParser", "Java", "Tokenizes and sanitizes user input into search terms.")
+    Component(search, "SearchService", "Java", "Runs full-text search with ranking via ts_rank.")
+    Component(formatter, "ResultFormatter", "Java", "Formats results with path, metadata, and content preview.")
+    Component(searchRepo, "SearchRepository", "Java / JDBC", "Executes FTS queries against PostgreSQL.")
+}
+
+ContainerDb(db, "PostgreSQL")
+
+Rel(parser, search, "Passes parsed query")
+Rel(search, searchRepo, "Delegates DB queries")
+Rel(search, formatter, "Passes raw results")
+Rel(searchRepo, db, "SELECT with tsvector/tsquery", "JDBC")
+
+@enduml
+```
+
+### CLI Application - Components
+
+| Component | Responsibility |
+|-----------|---------------|
+| **CommandRouter** | Parses CLI arguments and dispatches to the appropriate handler (index, search, configure). |
+| **ConfigManager** | Loads and persists runtime configuration (root directory, ignore rules, report format) from a config file. |
+| **OutputRenderer** | Renders search results and reports to the terminal. |
 
 
