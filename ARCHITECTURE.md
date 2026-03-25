@@ -167,3 +167,53 @@ Rel(searchRepo, db, "SELECT with tsvector/tsquery", "JDBC")
 | **OutputRenderer** | Renders search results and reports to the terminal. |
 
 
+---
+
+## Architecture Decision Records
+
+### ADR-1: PostgreSQL over SQLite
+
+**Context:** We need a database for storing indexed file data and performing full-text search.
+
+**Decision:** Use PostgreSQL.
+
+**Rationale:** PostgreSQL offers mature built-in full-text search (`tsvector`, `tsquery`, `ts_rank`), GIN indexes for fast lookups, and robust concurrent access. SQLite would be simpler to deploy but lacks native full-text ranking quality and concurrent write support.
+
+**Consequences:** Requires a running PostgreSQL instance (easily containerized with Docker).
+
+---
+
+### ADR-2: Incremental Indexing via Content Hashing
+
+**Context:** Re-indexing the entire filesystem on every run is slow and wasteful.
+
+**Decision:** Use a combination of file modification timestamps and SHA-256 content hashes to detect changes.
+
+**Rationale:** Modification timestamps provide a fast first check. Content hashes serve as a reliable fallback for edge cases where timestamps are unreliable (e.g., copied files).
+
+**Consequences:** Slight overhead on first index (hash computation), but subsequent runs only process changed files.
+
+---
+
+### ADR-3: java.nio.file for Filesystem Access
+
+**Context:** We need reliable recursive file traversal with metadata access.
+
+**Decision:** Use `java.nio.file` (`Files.walkFileTree` with a `FileVisitor`).
+
+**Rationale:** `FileVisitor` provides built-in hooks for handling errors (permission denied, symlink loops) at each step without aborting the entire traversal. It also exposes `BasicFileAttributes` directly, avoiding extra stat calls.
+
+**Consequences:** Requires Java 7+ (not a constraint for modern projects).
+
+---
+
+### ADR-4: CLI over GUI for Iteration 1
+
+**Context:** The system needs a user interface for searching and triggering indexing.
+
+**Decision:** Use a CLI interface (stdin/stdout).
+
+**Rationale:** A CLI keeps the scope focused on the core search logic. It is fast to develop, easy to test, and aligns with the iteration's emphasis on data quality and search correctness. A GUI or TUI can be layered on in later iterations.
+
+**Consequences:** No graphical previews; results are text-based.
+```
