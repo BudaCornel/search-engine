@@ -54,8 +54,9 @@ Containers are the separately deployable/runnable units that make up LocalSearch
 | **Indexing Engine** | Java | Crawls the filesystem, extracts content and metadata, populates the database |
 | **Query Engine** | Java | Parses queries, executes full-text search against the database, formats results |
 | **Database** | PostgreSQL | Stores indexed file records, content, metadata; provides full-text search via `tsvector` |
-![Container Diagram](images/containers.png)
 
+
+![Container Diagram](images/containers.png)
 ```plantuml
 @startuml C4_Containers
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
