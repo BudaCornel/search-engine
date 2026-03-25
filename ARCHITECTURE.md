@@ -98,8 +98,9 @@ Rel(queryEngine, db, "Executes full-text search queries", "JDBC")
 | **ChangeDetector** | Compares file modification timestamps and sizes against the database to support incremental indexing. |
 | **IndexBuilder** | Orchestrates the full indexing pipeline: crawl -> filter -> extract -> store. Tracks progress and generates a summary report. |
 | **FileRepository** | Data access layer for inserting, updating, and deleting file records in PostgreSQL. |
-![Indexing Engine Components](images/components_indexer.png)
 
+
+![Indexing Engine Components](images/components_indexer.png)
 ```plantuml
 @startuml C4_Components_Indexer
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
