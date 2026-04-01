@@ -14,6 +14,11 @@ import java.util.Set;
 public class FileCrawler {
     private static final Logger logger = LoggerFactory.getLogger(FileCrawler.class);
     private final Set<Path> visitedRealPaths = new HashSet<>();
+    private final FileFilter fileFilter;
+
+    public FileCrawler(FileFilter fileFilter) {
+        this.fileFilter = fileFilter;
+    }
 
     public List<Path> crawl(Path root) {
         List<Path> discoveredFiles = new ArrayList<>();
@@ -28,6 +33,10 @@ public class FileCrawler {
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
                         throws IOException {
+                    if (!fileFilter.accept(dir)) {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+
                     Path realPath = dir.toRealPath();
                     if (!visitedRealPaths.add(realPath)) {
                         logger.warn("Symlink loop detected, skipping: {}", dir);
@@ -38,7 +47,7 @@ public class FileCrawler {
 
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                    if (attrs.isRegularFile()) {
+                    if (attrs.isRegularFile() && fileFilter.accept(file)) {
                         discoveredFiles.add(file);
                         logger.debug("Discovered file: {}", file);
                     }
