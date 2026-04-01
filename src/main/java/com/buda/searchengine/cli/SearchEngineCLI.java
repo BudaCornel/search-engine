@@ -21,13 +21,14 @@ public class SearchEngineCLI {
     private static final String BANNER = """
             
             ╔══════════════════════════════════════╗
-            ║        LocalSearch Engine v1.0        ║
+            ║        LocalSearch Engine v1.0       ║
             ╠══════════════════════════════════════╣
             ║  Commands:                           ║
-            ║    index [path]   - Index a directory ║
-            ║    search <query> - Search files      ║
-            ║    config         - Show config        ║
-            ║    quit           - Exit              ║
+            ║    index [path]   - Full index       ║
+            ║    reindex        - Incremental index║
+            ║    search <query> - Search files     ║
+            ║    config         - Show config      ║
+            ║    quit           - Exit             ║
             ╚══════════════════════════════════════╝
             """;
 
@@ -60,10 +61,28 @@ public class SearchEngineCLI {
                 handleSearch(query, searchService);
             } else if (input.equalsIgnoreCase("config")) {
                 handleConfig();
-            } else {
+            } else if (input.equalsIgnoreCase("reindex")) {
+                handleReindex();
+            }else {
                 System.out.println("Unknown command. Use: index [path], search <query>, config, or quit");
             }
         }
+    }
+
+    private static void handleReindex() {
+        Path root = Paths.get(config.getRootDirectory());
+        System.out.println("Incremental reindex: " + root.toAbsolutePath());
+
+        FileFilter fileFilter = new FileFilter(config.getIgnorePatterns());
+        FileCrawler crawler = new FileCrawler(fileFilter);
+        ContentExtractor contentExtractor = new ContentExtractor();
+        MetadataExtractor metadataExtractor = new MetadataExtractor();
+        FileRepository repository = new FileRepository();
+
+        IndexBuilder indexBuilder = new IndexBuilder(
+                crawler, contentExtractor, metadataExtractor, repository);
+
+        indexBuilder.indexIncremental(root);
     }
 
     private static void handleIndex(String pathStr) {
