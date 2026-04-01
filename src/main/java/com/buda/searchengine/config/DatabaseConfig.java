@@ -6,6 +6,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+
+/** manages the HikariCP connection pool for PostgreSQL. */
 public class DatabaseConfig {
     private static final HikariDataSource dataSource;
 

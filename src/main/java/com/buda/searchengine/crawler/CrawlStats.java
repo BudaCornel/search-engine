@@ -1,5 +1,6 @@
 package com.buda.searchengine.crawler;
 
+/** tracks crawl statistics including files found, permissions denied, and symlinks skipped. */
 public class CrawlStats {
     private int filesFound = 0;
     private int directoriesTraversed = 0;

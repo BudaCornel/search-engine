@@ -10,6 +10,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+/** extracts file metadata such as extension, MIME type, size, and timestamps. */
 public class MetadataExtractor {
     private static final Logger logger = LoggerFactory.getLogger(MetadataExtractor.class);
 

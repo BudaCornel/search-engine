@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
+/** recursively traverses directories to discover files for indexing. */
 public class FileCrawler {
     private static final Logger logger = LoggerFactory.getLogger(FileCrawler.class);
     private final Set<Path> visitedRealPaths = new HashSet<>();

@@ -9,6 +9,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+/** detects added, modified, and deleted files by comparing content hashes. */
 public class ChangeDetector {
     private static final Logger logger = LoggerFactory.getLogger(ChangeDetector.class);
 

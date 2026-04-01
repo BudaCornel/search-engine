@@ -16,6 +16,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Scanner;
 
+
+/** CLI interface for indexing and searching local files. */
 public class SearchEngineCLI {
 
     private static final String BANNER = """

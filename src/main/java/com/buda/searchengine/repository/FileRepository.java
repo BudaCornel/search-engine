@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
+/** handles CRUD operations for file records in PostgreSQL. */
 public class FileRepository {
     private static final Logger logger = LoggerFactory.getLogger(FileRepository.class);
 

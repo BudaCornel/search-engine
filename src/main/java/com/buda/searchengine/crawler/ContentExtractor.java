@@ -13,6 +13,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** reads file content, extracts previews, and computes SHA-256 hashes. */
 public class ContentExtractor {
     private static final Logger logger = LoggerFactory.getLogger(ContentExtractor.class);
     private static final int PREVIEW_LINES = 3;

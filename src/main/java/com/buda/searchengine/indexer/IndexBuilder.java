@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+/** orchestrates the full and incremental indexing pipeline. */
 public class IndexBuilder {
     private static final Logger logger = LoggerFactory.getLogger(IndexBuilder.class);
 

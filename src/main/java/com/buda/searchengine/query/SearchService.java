@@ -10,6 +10,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/** provides full-text search with ranking, contextual snippets, and filename fallback. */
 public class SearchService {
     private static final Logger logger = LoggerFactory.getLogger(SearchService.class);
 
