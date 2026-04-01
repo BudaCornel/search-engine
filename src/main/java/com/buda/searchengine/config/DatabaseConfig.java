@@ -11,7 +11,7 @@ public class DatabaseConfig {
 
     static {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:postgresql://localhost:5432/localsearch");
+        config.setJdbcUrl("jdbc:postgresql://localhost:5433/localsearch");
         config.setUsername("localsearch");
         config.setPassword("localsearch");
         config.setMaximumPoolSize(10);
