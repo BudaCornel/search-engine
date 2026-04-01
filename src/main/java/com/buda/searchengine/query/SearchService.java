@@ -66,7 +66,7 @@ public class SearchService {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 results.add(new SearchResult(
-                        mapRow(rs),
+                        FileRecord.fromResultSet(rs),
                         rs.getDouble("rank"),
                         rs.getString("snippet")
                 ));
@@ -92,7 +92,7 @@ public class SearchService {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 results.add(new SearchResult(
-                        mapRow(rs),
+                        FileRecord.fromResultSet(rs),
                         rs.getDouble("rank"),
                         rs.getString("snippet")
                 ));
@@ -106,20 +106,5 @@ public class SearchService {
         return results;
     }
 
-    private FileRecord mapRow(ResultSet rs) throws SQLException {
-        FileRecord record = new FileRecord();
-        record.setId(rs.getLong("id"));
-        record.setAbsolutePath(rs.getString("absolute_path"));
-        record.setFileName(rs.getString("file_name"));
-        record.setExtension(rs.getString("extension"));
-        record.setMimeType(rs.getString("mime_type"));
-        record.setSizeBytes(rs.getLong("size_bytes"));
-        record.setContent(rs.getString("content"));
-        record.setPreview(rs.getString("preview"));
-        record.setContentHash(rs.getString("content_hash"));
-        record.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-        record.setModifiedAt(rs.getTimestamp("modified_at").toLocalDateTime());
-        record.setIndexedAt(rs.getTimestamp("indexed_at").toLocalDateTime());
-        return record;
-    }
+
 }

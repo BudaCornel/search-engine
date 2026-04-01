@@ -74,7 +74,7 @@ public class FileRepository {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return Optional.of(mapRow(rs));
+                return Optional.of(FileRecord.fromResultSet(rs));
             }
             return Optional.empty();
 
@@ -91,7 +91,7 @@ public class FileRepository {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                records.add(mapRow(rs));
+                records.add(FileRecord.fromResultSet(rs));
             }
             return records;
 
@@ -115,20 +115,5 @@ public class FileRepository {
         }
     }
 
-    private FileRecord mapRow(ResultSet rs) throws SQLException {
-        FileRecord record = new FileRecord();
-        record.setId(rs.getLong("id"));
-        record.setAbsolutePath(rs.getString("absolute_path"));
-        record.setFileName(rs.getString("file_name"));
-        record.setExtension(rs.getString("extension"));
-        record.setMimeType(rs.getString("mime_type"));
-        record.setSizeBytes(rs.getLong("size_bytes"));
-        record.setContent(rs.getString("content"));
-        record.setPreview(rs.getString("preview"));
-        record.setContentHash(rs.getString("content_hash"));
-        record.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-        record.setModifiedAt(rs.getTimestamp("modified_at").toLocalDateTime());
-        record.setIndexedAt(rs.getTimestamp("indexed_at").toLocalDateTime());
-        return record;
-    }
+
 }
