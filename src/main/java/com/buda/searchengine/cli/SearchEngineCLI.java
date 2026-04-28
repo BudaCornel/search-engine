@@ -22,16 +22,21 @@ public class SearchEngineCLI {
 
     private static final String BANNER = """
             
-            ╔══════════════════════════════════════╗
-            ║        LocalSearch Engine v1.0       ║
-            ╠══════════════════════════════════════╣
-            ║  Commands:                           ║
-            ║    index [path]   - Full index       ║
-            ║    reindex        - Incremental index║
-            ║    search <query> - Search files     ║
-            ║    config         - Show config      ║
-            ║    quit           - Exit             ║
-            ╚══════════════════════════════════════╝
+            ╔══════════════════════════════════════════════╗
+            ║         LocalSearch Engine v1.0              ║
+            ╠══════════════════════════════════════════════╣
+            ║  Commands:                                   ║
+            ║    index [path]   - Full index               ║
+            ║    reindex        - Incremental index        ║
+            ║    search <query> - Search files             ║
+            ║    config         - Show config              ║
+            ║    quit           - Exit                     ║
+            ║                                              ║
+            ║  Query qualifiers (combine with AND):        ║
+            ║    content:foo   path:src/main   ext:java    ║
+            ║    name:Auth     mime:text/plain             ║
+            ║    "quoted phrases" supported                ║
+            ╚══════════════════════════════════════════════╝
             """;
 
     private static AppConfig config;
