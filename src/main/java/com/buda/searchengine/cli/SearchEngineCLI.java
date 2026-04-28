@@ -7,6 +7,7 @@ import com.buda.searchengine.crawler.FileCrawler;
 import com.buda.searchengine.crawler.FileFilter;
 import com.buda.searchengine.indexer.IndexBuilder;
 import com.buda.searchengine.indexer.MetadataExtractor;
+import com.buda.searchengine.indexer.PathScorer;
 import com.buda.searchengine.model.SearchResult;
 import com.buda.searchengine.query.SearchService;
 import com.buda.searchengine.repository.FileRepository;
@@ -76,6 +77,8 @@ public class SearchEngineCLI {
         }
     }
 
+
+
     private static void handleReindex() {
         Path root = Paths.get(config.getRootDirectory());
         System.out.println("Incremental reindex: " + root.toAbsolutePath());
@@ -86,8 +89,9 @@ public class SearchEngineCLI {
         MetadataExtractor metadataExtractor = new MetadataExtractor();
         FileRepository repository = new FileRepository();
 
+        PathScorer pathScorer = new PathScorer();
         IndexBuilder indexBuilder = new IndexBuilder(
-                crawler, contentExtractor, metadataExtractor, repository);
+                crawler, contentExtractor, metadataExtractor, pathScorer, repository);
 
         indexBuilder.indexIncremental(root);
     }
@@ -109,8 +113,9 @@ public class SearchEngineCLI {
         MetadataExtractor metadataExtractor = new MetadataExtractor();
         FileRepository repository = new FileRepository();
 
+        PathScorer pathScorer = new PathScorer();
         IndexBuilder indexBuilder = new IndexBuilder(
-                crawler, contentExtractor, metadataExtractor, repository);
+                crawler, contentExtractor, metadataExtractor, pathScorer, repository);
 
         indexBuilder.indexAll(root);
     }
