@@ -10,7 +10,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-/** extracts file metadata such as extension, MIME type, size, and timestamps. */
+/** extracts file metadata: extension, MIME type, size, timestamps. */
 public class MetadataExtractor {
     private static final Logger logger = LoggerFactory.getLogger(MetadataExtractor.class);
 
@@ -56,6 +56,16 @@ public class MetadataExtractor {
         } catch (IOException e) {
             logger.warn("Failed to read modified time: {}", file, e);
             return LocalDateTime.now();
+        }
+    }
+
+    public LocalDateTime extractAccessedAt(Path file) {
+        try {
+            BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
+            return LocalDateTime.ofInstant(attrs.lastAccessTime().toInstant(), ZoneId.systemDefault());
+        } catch (IOException e) {
+            logger.warn("Failed to read access time: {}", file, e);
+            return null;
         }
     }
 }
