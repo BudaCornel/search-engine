@@ -10,6 +10,8 @@ import com.buda.searchengine.indexer.MetadataExtractor;
 import com.buda.searchengine.indexer.PathScorer;
 import com.buda.searchengine.model.SearchResult;
 import com.buda.searchengine.query.SearchService;
+import com.buda.searchengine.ranker.RankingStrategy;
+import com.buda.searchengine.ranker.RankingStrategyRegistry;
 import com.buda.searchengine.repository.FileRepository;
 
 import java.nio.file.Path;
@@ -24,12 +26,14 @@ public class SearchEngineCLI {
     private static final String BANNER = """
             
             ╔══════════════════════════════════════════════╗
-            ║         LocalSearch Engine v1.0              ║
+            ║         LocalSearch Engine v1.1              ║
             ╠══════════════════════════════════════════════╣
             ║  Commands:                                   ║
             ║    index [path]   - Full index               ║
             ║    reindex        - Incremental index        ║
             ║    search <query> - Search files             ║
+            ║    rank list      - List ranking strategies  ║
+            ║    rank <name>    - Switch ranking strategy  ║
             ║    config         - Show config              ║
             ║    quit           - Exit                     ║
             ║                                              ║
@@ -41,9 +45,11 @@ public class SearchEngineCLI {
             """;
 
     private static AppConfig config;
+    private static RankingStrategyRegistry rankingRegistry;
 
     public static void main(String[] args) {
         config = AppConfig.load();
+        rankingRegistry = RankingStrategyRegistry.withDefaults();
         System.out.println(BANNER);
 
         Scanner scanner = new Scanner(System.in);
@@ -67,16 +73,18 @@ public class SearchEngineCLI {
             } else if (input.startsWith("search ")) {
                 String query = input.substring(7).trim();
                 handleSearch(query, searchService);
+            } else if (input.equalsIgnoreCase("rank") || input.startsWith("rank ")) {
+                String arg = input.length() > 4 ? input.substring(5).trim() : "";
+                handleRank(arg, searchService);
             } else if (input.equalsIgnoreCase("config")) {
-                handleConfig();
+                handleConfig(searchService);
             } else if (input.equalsIgnoreCase("reindex")) {
                 handleReindex();
-            }else {
-                System.out.println("Unknown command. Use: index [path], search <query>, config, or quit");
+            } else {
+                System.out.println("Unknown command. Use: index [path], search <query>, rank [list|<name>], config, or quit");
             }
         }
     }
-
 
 
     private static void handleReindex() {
@@ -133,7 +141,8 @@ public class SearchEngineCLI {
             return;
         }
 
-        System.out.printf("%n Found %d result(s):%n%n", results.size());
+        System.out.printf("%n Found %d result(s) [strategy: %s]:%n%n",
+                results.size(), searchService.getStrategy().name());
 
         for (int i = 0; i < results.size(); i++) {
             SearchResult result = results.get(i);
@@ -141,18 +150,39 @@ public class SearchEngineCLI {
         }
     }
 
-    private static void handleConfig() {
+    private static void handleRank(String arg, SearchService searchService) {
+        if (arg.isEmpty() || arg.equalsIgnoreCase("list")) {
+            System.out.println("Available ranking strategies:");
+            String current = searchService.getStrategy().name();
+            for (RankingStrategy s : rankingRegistry.all()) {
+                String marker = s.name().equals(current) ? " *" : "  ";
+                System.out.printf("  %s %-15s - %s%n", marker, s.name(), s.description());
+            }
+            System.out.println("(Use 'rank <name>' to switch.)");
+            return;
+        }
+        rankingRegistry.find(arg).ifPresentOrElse(
+                s -> {
+                    searchService.setStrategy(s);
+                    System.out.println("Ranking strategy: " + s.name());
+                },
+                () -> System.out.println("Unknown strategy: " + arg + ". Try 'rank list'."));
+    }
+
+    private static void handleConfig(SearchService searchService) {
         System.out.printf("""
                 
                 Current Configuration:
-                  Root directory:  %s
-                  Ignore patterns: %s
-                  Max results:     %d
-                  Report format:   %s
+                  Root directory:   %s
+                  Ignore patterns:  %s
+                  Max results:      %d
+                  Report format:    %s
+                  Ranking strategy: %s
                 """,
                 config.getRootDirectory(),
                 config.getIgnorePatterns(),
                 config.getMaxResults(),
-                config.getReportFormat());
+                config.getReportFormat(),
+                searchService.getStrategy().name());
     }
 }
