@@ -42,18 +42,23 @@ public class QueryParser {
 
     private void classify(String token, ParsedQuery.Builder builder) {
         int colon = findUnquotedColon(token);
-        if (colon <= 0 || colon == token.length() - 1) {
+
+        if (colon <= 0) {
             builder.add(Qualifier.CONTENT, unquote(token));
             return;
         }
+
         String key = token.substring(0, colon);
-        String value = unquote(token.substring(colon + 1));
+        String value = colon == token.length() - 1
+                ? ""
+                : unquote(token.substring(colon + 1));
 
         Optional<Qualifier> qualifier = Qualifier.fromKey(key);
         if (qualifier.isEmpty()) {
             builder.add(Qualifier.CONTENT, unquote(token));
             return;
         }
+
         builder.add(qualifier.get(), value);
     }
 
