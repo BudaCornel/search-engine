@@ -1,6 +1,8 @@
 package com.buda.searchengine.query;
 
 import com.buda.searchengine.config.DatabaseConfig;
+import com.buda.searchengine.history.SearchEvent;
+import com.buda.searchengine.history.SearchObserver;
 import com.buda.searchengine.model.FileRecord;
 import com.buda.searchengine.model.SearchResult;
 import com.buda.searchengine.ranker.RankingStrategy;
@@ -14,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class SearchService {
@@ -22,6 +25,7 @@ public class SearchService {
     private static final int DEFAULT_LIMIT = 20;
 
     private final QueryParser parser;
+    private final List<SearchObserver> observers = new CopyOnWriteArrayList<>();
     private volatile RankingStrategy strategy;
 
     public SearchService() {
@@ -36,17 +40,25 @@ public class SearchService {
     public RankingStrategy getStrategy() { return strategy; }
     public void setStrategy(RankingStrategy strategy) { this.strategy = strategy; }
 
+    public void addObserver(SearchObserver observer) { observers.add(observer); }
+    public void removeObserver(SearchObserver observer) { observers.remove(observer); }
+
     public List<SearchResult> search(String rawQuery) {
         return search(rawQuery, DEFAULT_LIMIT);
     }
 
     public List<SearchResult> search(String rawQuery, int limit) {
-        return search(parser.parse(rawQuery), limit);
+        return search(parser.parse(rawQuery), rawQuery, limit);
     }
 
     public List<SearchResult> search(ParsedQuery query, int limit) {
+        return search(query, query.rawQuery(), limit);
+    }
+
+    private List<SearchResult> search(ParsedQuery query, String rawQuery, int limit) {
         if (query.isEmpty()) {
             logger.debug("Empty query, returning no results");
+            notifyObservers(SearchEvent.forQuery(rawQuery, query, 0));
             return List.of();
         }
 
@@ -56,7 +68,22 @@ public class SearchService {
 
         logger.info("Search '{}' returned {} results (strategy={})",
                 query.rawQuery(), ranked.size(), strategy.name());
+
+        notifyObservers(SearchEvent.forQuery(rawQuery, query, ranked.size()));
         return ranked;
+    }
+
+    public void recordClick(String absolutePath) {
+        notifyObservers(SearchEvent.forClick(absolutePath));
+    }
+
+    private void notifyObservers(SearchEvent event) {
+        for (SearchObserver o : observers) {
+            try { o.onSearch(event); }
+            catch (Exception e) {
+                logger.warn("Observer {} failed", o.getClass().getSimpleName(), e);
+            }
+        }
     }
 
     private List<SearchResult> structuredSearch(ParsedQuery query, int limit) {
