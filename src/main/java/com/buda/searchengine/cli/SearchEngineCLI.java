@@ -11,6 +11,7 @@ import com.buda.searchengine.indexer.MetadataExtractor;
 import com.buda.searchengine.indexer.PathScorer;
 import com.buda.searchengine.model.SearchResult;
 import com.buda.searchengine.query.SearchService;
+import com.buda.searchengine.ranker.HistoryAwareRanking;
 import com.buda.searchengine.ranker.RankingStrategy;
 import com.buda.searchengine.ranker.RankingStrategyRegistry;
 import com.buda.searchengine.repository.FileRepository;
@@ -73,6 +74,10 @@ public class SearchEngineCLI {
         historyRepo = new SearchHistoryRepository();
         suggestions = new InMemorySuggestionObserver();
         suggestions.primeFrom(historyRepo);
+
+        for (RankingStrategy base : List.copyOf(rankingRegistry.all())) {
+            rankingRegistry.register(new HistoryAwareRanking(base, historyRepo));
+        }
 
         searchService = new SearchService();
         searchService.addObserver(new PersistentHistoryObserver(historyRepo));
