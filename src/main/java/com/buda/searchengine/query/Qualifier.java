@@ -8,7 +8,8 @@ public enum Qualifier {
     PATH("path"),
     NAME("name"),
     EXT("ext"),
-    MIME("mime");
+    MIME("mime"),
+    SIZE("size");
 
     private final String key;
     Qualifier(String key) { this.key = key; }
