@@ -152,6 +152,10 @@ public class SearchService {
             where.append(" AND mime_type = ?");
             params.add(m);
         }
+        for (String c : parsed.termsFor(Qualifier.COLOR)) {
+            where.append(" AND LOWER(dominant_color) = LOWER(?)");
+            params.add(c);
+        }
         return new Plan(where.toString(), params, contentTerm, false);
     }
 

@@ -9,7 +9,8 @@ public enum Qualifier {
     NAME("name"),
     EXT("ext"),
     MIME("mime"),
-    SIZE("size");
+    SIZE("size"),
+    COLOR("color");
 
     private final String key;
     Qualifier(String key) { this.key = key; }
