@@ -43,3 +43,5 @@ ignorePatterns:
 maxResults: 20
 
 reportFormat: "text"
+
+pipelineReaders: 4

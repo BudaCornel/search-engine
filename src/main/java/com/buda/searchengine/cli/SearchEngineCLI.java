@@ -143,7 +143,8 @@ public class SearchEngineCLI {
                 new MetadataExtractor(),
                 new PathScorer(),
                 new FileRepository(),
-                FileProcessorRegistry.withDefaults(contentExtractor));
+                FileProcessorRegistry.withDefaults(contentExtractor),
+                config.getPipelineReaders());
     }
 
     private static void handleSearch(String query) {

@@ -18,6 +18,7 @@ public class AppConfig {
     private List<String> ignorePatterns;
     private int maxResults;
     private String reportFormat;
+    private int pipelineReaders;
 
     private AppConfig() {}
 
@@ -38,6 +39,8 @@ public class AppConfig {
             config.rootDirectory = (String) data.getOrDefault("rootDirectory", ".");
             config.maxResults = (int) data.getOrDefault("maxResults", 20);
             config.reportFormat = (String) data.getOrDefault("reportFormat", "text");
+            config.pipelineReaders = (int) data.getOrDefault("pipelineReaders",
+                    Runtime.getRuntime().availableProcessors());
 
             Object patterns = data.get("ignorePatterns");
             if (patterns instanceof List<?>) {
@@ -64,6 +67,7 @@ public class AppConfig {
         this.ignorePatterns = List.of(".git", ".idea", "node_modules", "target");
         this.maxResults = 20;
         this.reportFormat = "text";
+        this.pipelineReaders = Runtime.getRuntime().availableProcessors();
         return this;
     }
 
@@ -71,4 +75,5 @@ public class AppConfig {
     public List<String> getIgnorePatterns() { return ignorePatterns; }
     public int getMaxResults() { return maxResults; }
     public String getReportFormat() { return reportFormat; }
+    public int getPipelineReaders() { return pipelineReaders; }
 }
