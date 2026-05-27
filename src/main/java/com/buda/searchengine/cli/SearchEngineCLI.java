@@ -19,6 +19,8 @@ import com.buda.searchengine.ranker.RankingStrategy;
 import com.buda.searchengine.ranker.RankingStrategyRegistry;
 import com.buda.searchengine.ranker.RelevanceRanking;
 import com.buda.searchengine.repository.FileRepository;
+import com.buda.searchengine.widgets.Widget;
+import com.buda.searchengine.widgets.WidgetFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,6 +63,7 @@ public class SearchEngineCLI {
     private static RankingStrategyRegistry rankingRegistry;
     private static SearchHistoryRepository historyRepo;
     private static InMemorySuggestionObserver suggestions;
+    private static WidgetFactory widgetFactory;
     private static List<SearchResult> lastResults = List.of();
 
     public static void main(String[] args) {
@@ -78,6 +81,7 @@ public class SearchEngineCLI {
         historyRepo = new SearchHistoryRepository();
         suggestions = new InMemorySuggestionObserver();
         suggestions.primeFrom(historyRepo);
+        widgetFactory = WidgetFactory.withDefaults();
 
         for (RankingStrategy base : List.copyOf(rankingRegistry.all())) {
             rankingRegistry.register(new HistoryAwareRanking(base, historyRepo));
@@ -168,6 +172,15 @@ public class SearchEngineCLI {
         for (int i = 0; i < lastResults.size(); i++) {
             System.out.printf("  %d. %s%n", i + 1, lastResults.get(i));
         }
+
+        List<Widget> activated = widgetFactory.activatedFor(lastResults);
+        if (!activated.isEmpty()) {
+            System.out.println("\nSuggested widgets:");
+            for (Widget w : activated) {
+                System.out.println("    " + w.render(lastResults));
+            }
+        }
+
         System.out.println("(Tip: 'open <n>' to record opening a result)");
     }
 
