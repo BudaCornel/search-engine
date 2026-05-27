@@ -43,21 +43,7 @@ public class FileRepository {
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(INSERT_SQL)) {
 
-            stmt.setString(1, record.getAbsolutePath());
-            stmt.setString(2, record.getFileName());
-            stmt.setString(3, record.getExtension());
-            stmt.setString(4, record.getMimeType());
-            stmt.setLong(5, record.getSizeBytes());
-            stmt.setString(6, record.getContent());
-            stmt.setString(7, record.getPreview());
-            stmt.setString(8, record.getContentHash());
-            stmt.setDouble(9, record.getPathScore());
-            stmt.setString(10, record.getDominantColor());
-            stmt.setTimestamp(11, Timestamp.valueOf(record.getCreatedAt()));
-            stmt.setTimestamp(12, Timestamp.valueOf(record.getModifiedAt()));
-            stmt.setTimestamp(13, record.getAccessedAt() == null
-                    ? null : Timestamp.valueOf(record.getAccessedAt()));
-
+            bindUpsert(stmt, record);
             stmt.executeUpdate();
             logger.debug("Upserted: {}", record.getAbsolutePath());
 
@@ -65,6 +51,45 @@ public class FileRepository {
             logger.error("Upsert failed: {}", record.getAbsolutePath(), e);
             throw new RuntimeException("Database error during upsert", e);
         }
+    }
+
+    public int upsertBatch(List<FileRecord> records) {
+        if (records.isEmpty()) return 0;
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(INSERT_SQL)) {
+
+            conn.setAutoCommit(false);
+            for (FileRecord r : records) {
+                bindUpsert(stmt, r);
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+            conn.commit();
+            logger.debug("Batch upserted {} records", records.size());
+            return records.size();
+
+        } catch (SQLException e) {
+            logger.error("Batch upsert of {} records failed: {}",
+                    records.size(), e.getMessage());
+            return 0;
+        }
+    }
+
+    private void bindUpsert(PreparedStatement stmt, FileRecord record) throws SQLException {
+        stmt.setString(1, record.getAbsolutePath());
+        stmt.setString(2, record.getFileName());
+        stmt.setString(3, record.getExtension());
+        stmt.setString(4, record.getMimeType());
+        stmt.setLong(5, record.getSizeBytes());
+        stmt.setString(6, record.getContent());
+        stmt.setString(7, record.getPreview());
+        stmt.setString(8, record.getContentHash());
+        stmt.setDouble(9, record.getPathScore());
+        stmt.setString(10, record.getDominantColor());
+        stmt.setTimestamp(11, Timestamp.valueOf(record.getCreatedAt()));
+        stmt.setTimestamp(12, Timestamp.valueOf(record.getModifiedAt()));
+        stmt.setTimestamp(13, record.getAccessedAt() == null
+                ? null : Timestamp.valueOf(record.getAccessedAt()));
     }
 
     public Optional<FileRecord> findByPath(String absolutePath) {
