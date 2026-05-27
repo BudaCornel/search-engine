@@ -17,6 +17,7 @@ public class FileProcessorRegistry {
 
     public static FileProcessorRegistry withDefaults(ContentExtractor extractor) {
         return new FileProcessorRegistry(List.of(
+                new ImageFileProcessor(extractor),
                 new TextFileProcessor(extractor)
         ));
     }
