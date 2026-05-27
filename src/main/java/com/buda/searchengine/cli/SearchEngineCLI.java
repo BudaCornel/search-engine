@@ -11,10 +11,13 @@ import com.buda.searchengine.indexer.MetadataExtractor;
 import com.buda.searchengine.indexer.PathScorer;
 import com.buda.searchengine.indexer.processor.FileProcessorRegistry;
 import com.buda.searchengine.model.SearchResult;
+import com.buda.searchengine.query.QueryParser;
 import com.buda.searchengine.query.SearchService;
+import com.buda.searchengine.query.preprocessor.QueryPreprocessor;
 import com.buda.searchengine.ranker.HistoryAwareRanking;
 import com.buda.searchengine.ranker.RankingStrategy;
 import com.buda.searchengine.ranker.RankingStrategyRegistry;
+import com.buda.searchengine.ranker.RelevanceRanking;
 import com.buda.searchengine.repository.FileRepository;
 
 import java.nio.file.Path;
@@ -80,7 +83,10 @@ public class SearchEngineCLI {
             rankingRegistry.register(new HistoryAwareRanking(base, historyRepo));
         }
 
-        searchService = new SearchService();
+        searchService = new SearchService(
+                new QueryParser(),
+                new RelevanceRanking(),
+                QueryPreprocessor.standard(config.getSynonyms()));
         searchService.addObserver(new PersistentHistoryObserver(historyRepo));
         searchService.addObserver(suggestions);
     }

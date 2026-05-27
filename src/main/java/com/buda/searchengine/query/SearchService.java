@@ -9,6 +9,8 @@ import com.buda.searchengine.query.booleanq.BooleanNode;
 import com.buda.searchengine.query.booleanq.BooleanParser;
 import com.buda.searchengine.query.booleanq.SqlFragment;
 import com.buda.searchengine.query.booleanq.SqlVisitor;
+import com.buda.searchengine.query.preprocessor.IdentityPreprocessor;
+import com.buda.searchengine.query.preprocessor.QueryPreprocessor;
 import com.buda.searchengine.ranker.RankingStrategy;
 import com.buda.searchengine.ranker.RelevanceRanking;
 import org.slf4j.Logger;
@@ -35,16 +37,23 @@ public class SearchService {
     private final QueryParser parser;
     private final BooleanParser booleanParser;
     private final SqlVisitor sqlVisitor;
+    private final QueryPreprocessor preprocessor;
     private final List<SearchObserver> observers = new CopyOnWriteArrayList<>();
     private volatile RankingStrategy strategy;
 
     public SearchService() {
-        this(new QueryParser(), new RelevanceRanking());
+        this(new QueryParser(), new RelevanceRanking(), new IdentityPreprocessor());
     }
 
     public SearchService(QueryParser parser, RankingStrategy strategy) {
+        this(parser, strategy, new IdentityPreprocessor());
+    }
+
+    public SearchService(QueryParser parser, RankingStrategy strategy,
+                         QueryPreprocessor preprocessor) {
         this.parser = parser;
         this.strategy = strategy;
+        this.preprocessor = preprocessor;
         this.booleanParser = new BooleanParser();
         this.sqlVisitor = new SqlVisitor();
     }
@@ -66,9 +75,19 @@ public class SearchService {
             return List.of();
         }
 
+        String processed = preprocessor.process(rawQuery);
+        if (processed.isBlank()) {
+            ParsedQuery empty = parser.parse(rawQuery);
+            notifyObservers(SearchEvent.forQuery(rawQuery, empty, 0));
+            return List.of();
+        }
+        if (!processed.equals(rawQuery)) {
+            logger.debug("Query preprocessed: '{}' -> '{}'", rawQuery, processed);
+        }
+
         Plan plan;
         try {
-            plan = looksBoolean(rawQuery) ? planBoolean(rawQuery) : planSimple(rawQuery);
+            plan = looksBoolean(processed) ? planBoolean(processed) : planSimple(processed);
         } catch (BooleanParser.ParseException e) {
             logger.warn("Boolean parse failed: {}", e.getMessage());
             throw new RuntimeException("Bad query: " + e.getMessage());
