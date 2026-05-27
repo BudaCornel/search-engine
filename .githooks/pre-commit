@@ -1,0 +1,56 @@
+#!/bin/sh
+#
+# Pre-commit hook for the LocalSearch project.
+# Runs before each `git commit` to catch obvious issues early.
+#
+#   1. Compile the project — abort the commit on any compile error.
+#   2. Warn (but do not block) on common debug leftovers in staged Java
+#      files: System.out.println, TODO, FIXME.
+#
+# To enable in your local clone, run once from the repo root:
+#   git config core.hooksPath .githooks
+#
+
+set -e
+
+if [ -t 1 ]; then
+    RED='\033[0;31m'; YELLOW='\033[0;33m'; GREEN='\033[0;32m'; NC='\033[0m'
+else
+    RED=''; YELLOW=''; GREEN=''; NC=''
+fi
+
+staged_java=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.java$' || true)
+
+
+staged_src=$(git diff --cached --name-only --diff-filter=ACM \
+    | grep -E '\.(java|xml|yml|yaml|sql)$' || true)
+
+if [ -n "$staged_src" ]; then
+    printf "${GREEN}[pre-commit] Running mvn compile...${NC}\n"
+    if ! mvn -q -DskipTests compile; then
+        printf "${RED}[pre-commit] Compile failed. Commit aborted.${NC}\n"
+        exit 1
+    fi
+fi
+
+if [ -n "$staged_java" ]; then
+    warned=0
+    for f in $staged_java; do
+        added=$(git diff --cached -U0 -- "$f" | grep -E '^\+' | grep -v '^\+\+\+' || true)
+
+        if printf '%s\n' "$added" | grep -q 'System\.out\.println'; then
+            printf "${YELLOW}[pre-commit] %s contains System.out.println (consider using the logger)${NC}\n" "$f"
+            warned=1
+        fi
+        if printf '%s\n' "$added" | grep -qE '(TODO|FIXME)'; then
+            printf "${YELLOW}[pre-commit] %s contains TODO/FIXME${NC}\n" "$f"
+            warned=1
+        fi
+    done
+    if [ "$warned" -eq 0 ]; then
+        printf "${GREEN}[pre-commit] No debug leftovers in staged files.${NC}\n"
+    fi
+fi
+
+printf "${GREEN}[pre-commit] OK${NC}\n"
+exit 0
