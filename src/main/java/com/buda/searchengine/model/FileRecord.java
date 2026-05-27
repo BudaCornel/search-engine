@@ -13,6 +13,7 @@ public class FileRecord {
     private String preview;
     private String contentHash;
     private double pathScore;
+    private String dominantColor;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private LocalDateTime accessedAt;
@@ -68,6 +69,9 @@ public class FileRecord {
     public double getPathScore() { return pathScore; }
     public void setPathScore(double pathScore) { this.pathScore = pathScore; }
 
+    public String getDominantColor() { return dominantColor; }
+    public void setDominantColor(String dominantColor) { this.dominantColor = dominantColor; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -99,6 +103,7 @@ public class FileRecord {
         r.setPreview(rs.getString("preview"));
         r.setContentHash(rs.getString("content_hash"));
         r.setPathScore(rs.getDouble("path_score"));
+        r.setDominantColor(rs.getString("dominant_color"));
         r.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
         r.setModifiedAt(rs.getTimestamp("modified_at").toLocalDateTime());
         java.sql.Timestamp accessed = rs.getTimestamp("accessed_at");

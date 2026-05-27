@@ -17,20 +17,22 @@ public class FileRepository {
     private static final String INSERT_SQL = """
             INSERT INTO files (absolute_path, file_name, extension, mime_type,
                                size_bytes, content, preview, content_hash,
-                               path_score, created_at, modified_at, accessed_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                               path_score, dominant_color,
+                               created_at, modified_at, accessed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (absolute_path) DO UPDATE SET
-                file_name    = EXCLUDED.file_name,
-                extension    = EXCLUDED.extension,
-                mime_type    = EXCLUDED.mime_type,
-                size_bytes   = EXCLUDED.size_bytes,
-                content      = EXCLUDED.content,
-                preview      = EXCLUDED.preview,
-                content_hash = EXCLUDED.content_hash,
-                path_score   = EXCLUDED.path_score,
-                modified_at  = EXCLUDED.modified_at,
-                accessed_at  = EXCLUDED.accessed_at,
-                indexed_at   = NOW()
+                file_name      = EXCLUDED.file_name,
+                extension      = EXCLUDED.extension,
+                mime_type      = EXCLUDED.mime_type,
+                size_bytes     = EXCLUDED.size_bytes,
+                content        = EXCLUDED.content,
+                preview        = EXCLUDED.preview,
+                content_hash   = EXCLUDED.content_hash,
+                path_score     = EXCLUDED.path_score,
+                dominant_color = EXCLUDED.dominant_color,
+                modified_at    = EXCLUDED.modified_at,
+                accessed_at    = EXCLUDED.accessed_at,
+                indexed_at     = NOW()
             """;
 
     private static final String FIND_BY_PATH_SQL = "SELECT * FROM files WHERE absolute_path = ?";
@@ -50,9 +52,10 @@ public class FileRepository {
             stmt.setString(7, record.getPreview());
             stmt.setString(8, record.getContentHash());
             stmt.setDouble(9, record.getPathScore());
-            stmt.setTimestamp(10, Timestamp.valueOf(record.getCreatedAt()));
-            stmt.setTimestamp(11, Timestamp.valueOf(record.getModifiedAt()));
-            stmt.setTimestamp(12, record.getAccessedAt() == null
+            stmt.setString(10, record.getDominantColor());
+            stmt.setTimestamp(11, Timestamp.valueOf(record.getCreatedAt()));
+            stmt.setTimestamp(12, Timestamp.valueOf(record.getModifiedAt()));
+            stmt.setTimestamp(13, record.getAccessedAt() == null
                     ? null : Timestamp.valueOf(record.getAccessedAt()));
 
             stmt.executeUpdate();
