@@ -3,6 +3,9 @@ package com.buda.searchengine.indexer;
 import com.buda.searchengine.crawler.ContentExtractor;
 import com.buda.searchengine.crawler.CrawlStats;
 import com.buda.searchengine.crawler.FileCrawler;
+import com.buda.searchengine.indexer.processor.FileProcessor;
+import com.buda.searchengine.indexer.processor.FileProcessorRegistry;
+import com.buda.searchengine.indexer.processor.ProcessedContent;
 import com.buda.searchengine.model.FileRecord;
 import com.buda.searchengine.repository.FileRepository;
 import org.slf4j.Logger;
@@ -17,6 +20,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /** Orchestrates the full and incremental indexing pipeline. */
 public class IndexBuilder {
@@ -28,17 +32,19 @@ public class IndexBuilder {
     private final PathScorer pathScorer;
     private final FileRepository repository;
     private final ChangeDetector changeDetector;
+    private final FileProcessorRegistry processorRegistry;
 
     private int filesIndexed, filesSkipped, filesNew, filesUpdated, filesUnchanged, filesDeleted, errors;
 
     public IndexBuilder(FileCrawler crawler, ContentExtractor contentExtractor,
                         MetadataExtractor metadataExtractor, PathScorer pathScorer,
-                        FileRepository repository) {
+                        FileRepository repository, FileProcessorRegistry processorRegistry) {
         this.crawler = crawler;
         this.contentExtractor = contentExtractor;
         this.metadataExtractor = metadataExtractor;
         this.pathScorer = pathScorer;
         this.repository = repository;
+        this.processorRegistry = processorRegistry;
         this.changeDetector = new ChangeDetector(repository);
     }
 
@@ -93,31 +99,39 @@ public class IndexBuilder {
     }
 
     private boolean indexFile(Path file) {
-        String content = contentExtractor.extractContent(file);
-        if (content == null) {
+        String mimeType = metadataExtractor.extractMimeType(file);
+
+        Optional<FileProcessor> processor = processorRegistry.findFor(file, mimeType);
+        if (processor.isEmpty()) {
             filesSkipped++;
-            logger.debug("Skipped non-text file: {}", file);
+            logger.debug("No processor for: {} (mime={})", file, mimeType);
             return false;
         }
 
-        String preview = contentExtractor.extractPreview(file);
-        String hash = contentExtractor.computeHash(file);
+        Optional<ProcessedContent> result = processor.get().process(file);
+        if (result.isEmpty()) {
+            filesSkipped++;
+            logger.debug("Processor {} returned empty for: {}",
+                    processor.get().getClass().getSimpleName(), file);
+            return false;
+        }
+        ProcessedContent pc = result.get();
 
         FileRecord record = new FileRecord(
                 file.toAbsolutePath().toString(),
                 file.getFileName().toString(),
                 metadataExtractor.extractExtension(file),
-                metadataExtractor.extractMimeType(file),
+                mimeType,
                 metadataExtractor.extractSize(file),
-                content,
-                preview,
-                hash,
+                pc.content(),
+                pc.preview(),
+                pc.contentHash(),
                 metadataExtractor.extractCreatedAt(file),
                 metadataExtractor.extractModifiedAt(file),
                 metadataExtractor.extractAccessedAt(file)
         );
+        record.setDominantColor(pc.dominantColor());
 
-        // Compute and attach path_score (grade 6).
         try {
             BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
             record.setPathScore(pathScorer.score(file, attrs));

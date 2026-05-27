@@ -9,6 +9,7 @@ import com.buda.searchengine.history.*;
 import com.buda.searchengine.indexer.IndexBuilder;
 import com.buda.searchengine.indexer.MetadataExtractor;
 import com.buda.searchengine.indexer.PathScorer;
+import com.buda.searchengine.indexer.processor.FileProcessorRegistry;
 import com.buda.searchengine.model.SearchResult;
 import com.buda.searchengine.query.SearchService;
 import com.buda.searchengine.ranker.HistoryAwareRanking;
@@ -48,7 +49,7 @@ public class SearchEngineCLI {
             ║                                                  ║
             ║  Query qualifiers (combine with AND):            ║
             ║    content:foo  path:src/main  ext:java          ║
-            ║    name:Auth    mime:text/plain  "with spaces"   ║
+            ║    name:Auth    mime:text/plain  color:red       ║
             ╚══════════════════════════════════════════════════╝
             """;
 
@@ -135,12 +136,14 @@ public class SearchEngineCLI {
     }
 
     private static IndexBuilder buildIndexer() {
+        ContentExtractor contentExtractor = new ContentExtractor();
         return new IndexBuilder(
                 new FileCrawler(new FileFilter(config.getIgnorePatterns())),
-                new ContentExtractor(),
+                contentExtractor,
                 new MetadataExtractor(),
                 new PathScorer(),
-                new FileRepository());
+                new FileRepository(),
+                FileProcessorRegistry.withDefaults(contentExtractor));
     }
 
     private static void handleSearch(String query) {
