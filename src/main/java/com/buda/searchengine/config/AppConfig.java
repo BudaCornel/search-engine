@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,7 @@ public class AppConfig {
     private int maxResults;
     private String reportFormat;
     private int pipelineReaders;
+    private Map<String, List<String>> synonyms;
 
     private AppConfig() {}
 
@@ -51,6 +53,19 @@ public class AppConfig {
                 config.ignorePatterns = new ArrayList<>();
             }
 
+            Object syn = data.get("synonyms");
+            config.synonyms = new HashMap<>();
+            if (syn instanceof Map<?, ?> map) {
+                for (Map.Entry<?, ?> e : map.entrySet()) {
+                    if (e.getValue() instanceof List<?> values) {
+                        List<String> stringValues = values.stream()
+                                .map(Object::toString)
+                                .toList();
+                        config.synonyms.put(e.getKey().toString(), stringValues);
+                    }
+                }
+            }
+
             logger.info("Configuration loaded: root={}, ignore={} patterns",
                     config.rootDirectory, config.ignorePatterns.size());
 
@@ -68,6 +83,7 @@ public class AppConfig {
         this.maxResults = 20;
         this.reportFormat = "text";
         this.pipelineReaders = Runtime.getRuntime().availableProcessors();
+        this.synonyms = new HashMap<>();
         return this;
     }
 
@@ -76,4 +92,5 @@ public class AppConfig {
     public int getMaxResults() { return maxResults; }
     public String getReportFormat() { return reportFormat; }
     public int getPipelineReaders() { return pipelineReaders; }
+    public Map<String, List<String>> getSynonyms() { return synonyms; }
 }

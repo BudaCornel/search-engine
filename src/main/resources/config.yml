@@ -45,3 +45,11 @@ maxResults: 20
 reportFormat: "text"
 
 pipelineReaders: 4
+
+synonyms:
+  img:  [image, photo, picture]
+  pic:  [picture, image, photo]
+  doc:  [document, file]
+  js:   [javascript]
+  ts:   [typescript]
+  py:   [python]
