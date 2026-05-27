@@ -80,7 +80,7 @@ Iteration 1 — initial release.
   `ts_headline` snippets.
 - C4-model `ARCHITECTURE.md` documenting the system design.
 
-[Unreleased]: https://github.com/CornelBuda/search-engine/compare/v3.0.0...HEAD
-[3.0.0]:      https://github.com/CornelBuda/search-engine/compare/v2.0.0...v3.0.0
-[2.0.0]:      https://github.com/CornelBuda/search-engine/compare/v1.0.0...v2.0.0
-[1.0.0]:      https://github.com/CornelBuda/search-engine/releases/tag/v1.0.0
+[Unreleased]: https://github.com/BudaCornel/search-engine/compare/v3.0.0...HEAD
+[3.0.0]:      https://github.com/BudaCornel/search-engine/compare/v2.0.0...v3.0.0
+[2.0.0]:      https://github.com/BudaCornel/search-engine/compare/v1.0.0...v2.0.0
+[1.0.0]:      https://github.com/BudaCornel/search-engine/releases/tag/v1.0.0
