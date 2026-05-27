@@ -18,12 +18,14 @@ CREATE TABLE IF NOT EXISTS files (
 
 ALTER TABLE files ADD COLUMN IF NOT EXISTS path_score DOUBLE PRECISION NOT NULL DEFAULT 0.0;
 ALTER TABLE files ADD COLUMN IF NOT EXISTS accessed_at TIMESTAMP;
+ALTER TABLE files ADD COLUMN IF NOT EXISTS dominant_color VARCHAR(32);
 
-CREATE INDEX IF NOT EXISTS idx_files_content_tsv  ON files USING GIN (content_tsv);
+CREATE INDEX IF NOT EXISTS idx_files_content_tsv   ON files USING GIN (content_tsv);
 CREATE INDEX IF NOT EXISTS idx_files_absolute_path ON files (absolute_path);
-CREATE INDEX IF NOT EXISTS idx_files_path_score   ON files (path_score DESC);
-CREATE INDEX IF NOT EXISTS idx_files_modified_at  ON files (modified_at DESC);
-CREATE INDEX IF NOT EXISTS idx_files_accessed_at  ON files (accessed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_files_path_score    ON files (path_score DESC);
+CREATE INDEX IF NOT EXISTS idx_files_modified_at   ON files (modified_at DESC);
+CREATE INDEX IF NOT EXISTS idx_files_accessed_at   ON files (accessed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_files_dominant_color ON files (dominant_color);
 
 CREATE OR REPLACE FUNCTION files_tsv_trigger() RETURNS trigger AS $$
 BEGIN
