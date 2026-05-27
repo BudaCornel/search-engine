@@ -13,7 +13,6 @@ public class SynonymDecorator implements QueryPreprocessor {
 
     public SynonymDecorator(QueryPreprocessor delegate, Map<String, List<String>> synonyms) {
         this.delegate = delegate;
-        // normalize keys to lowercase for case-insensitive lookup
         Map<String, List<String>> normalized = new HashMap<>();
         if (synonyms != null) {
             for (Map.Entry<String, List<String>> e : synonyms.entrySet()) {
